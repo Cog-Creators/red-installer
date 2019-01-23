@@ -21,7 +21,7 @@ Please execute the following command whilst activated in your virtual environmen
 ### Linux and Mac
 In bash/Terminal:
 ```bash
-wget "https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py" | python3 -
+wget -O - "https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py" | python3 -
 ```
 
 ### Windows
