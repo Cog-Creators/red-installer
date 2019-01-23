@@ -20,14 +20,16 @@ Please execute the following command whilst activated in your virtual environmen
 
 ### Linux and Mac
 In bash/Terminal:
-```
-wget https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py | python -
+```bash
+wget "https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py" | python3 -
 ```
 
 ### Windows
 In PowerShell:
 ```powershell
-wget -UseBasicParsing https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py | python -
+(Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py").Content | python -
 ```
 
-
+Or, if you prefer, you can simply download red-installer.py with your web browser, open
+Windows Command Prompt, activate your virtual environment and do `python
+red-installer.py` in the directory where you downloaded the file.
