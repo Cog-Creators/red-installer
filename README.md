@@ -1,7 +1,7 @@
 # red-installer
 
-This is a simple installer for Red-DiscordBot, in use until discord.py is uploaded to
-the Python Package Index.
+This is a simple installer for Red-DiscordBot, in use until the discord.py rewrite is
+uploaded to the Python Package Index.
 
 It is roughly equivalent to doing the following command on pip versions prior to 19.0:
 ```bash
@@ -21,13 +21,13 @@ Please execute the following command whilst activated in your virtual environmen
 ### Linux and Mac
 In bash/Terminal:
 ```bash
-wget -O - "https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py" | python3 -
+wget -O - "https://raw.githubusercontent.com/Cog-Creators/red-installer/master/red-installer.py" | python3 -
 ```
 
 ### Windows
 In PowerShell:
 ```powershell
-(Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Tobotimus/red-installer/master/red-installer.py").Content | python -
+(Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Cog-Creators/red-installer/master/red-installer.py").Content | python -
 ```
 
 Or, if you prefer, you can simply download red-installer.py with your web browser, open
