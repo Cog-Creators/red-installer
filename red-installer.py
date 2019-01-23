@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
-import argparse
 import logging
-import pathlib
 import subprocess
 import sys
 import tarfile
 import tempfile
 
 logging.basicConfig(
-    style="{",
-    level=logging.INFO,
-    stream=sys.stdout,
-    format="{levelname:^10}: {message}",
+    level=logging.INFO, stream=sys.stdout, format=" %(levelname)s : %(message)s"
 )
 log = logging.getLogger("red-installer")
 
+if sys.platform == "win32":
+    MIN_PYTHON_VERSION = (3, 6, 6)
+else:
+    MIN_PYTHON_VERSION = (3, 6, 2)
+
+if sys.version_info < MIN_PYTHON_VERSION:
+    log.critical(
+        (
+            "Red requires python version %s or greater, but you are running version %s "
+            "which is incompatible."
+        ),
+        ".".join(map(str, MIN_PYTHON_VERSION)),
+        sys.version.replace("\n", ""),
+    )
+    sys.exit(1)
+
+import argparse
+import pathlib
+
 argparser = argparse.ArgumentParser(
-    prog="red-installer",
-    description="Simple installer for Red-DiscordBot",
+    prog="red-installer", description="Simple installer for Red-DiscordBot"
 )
 argparser.add_argument(
     "--url",
@@ -26,15 +39,13 @@ argparser.add_argument(
     help=(
         "Install from a URL instead of from PyPI. Using this option will cause all "
         "other options to be ignored."
-    )
+    ),
 )
 argparser.add_argument(
     "--install-version",
     "-V",
     metavar="VERSION",
-    help=(
-        "Install a particular version from PyPI."
-    )
+    help=("Install a particular version from PyPI."),
 )
 argparser.add_argument(
     "--extra",
@@ -53,9 +64,7 @@ argparser.add_argument(
     "--dev",
     "-d",
     action="store_true",
-    help=(
-        "Install Red from the V3/develop branch on GitHub."
-    )
+    help="Install Red from the V3/develop branch on GitHub.",
 )
 argparser.add_argument(
     "--pre",
@@ -63,7 +72,7 @@ argparser.add_argument(
     help=(
         "Prefer newer pre-releases over stable releases. This option is ignored when "
         "used in conjunction with --install-version, --dev or --url."
-    )
+    ),
 )
 
 IS_VENV = hasattr(sys, "real_prefix") or (
@@ -119,7 +128,7 @@ def main(args=None):
         try:
             archive_path = next(pathlib.Path(tmpdir).iterdir())
         except StopIteration:
-            log.fatal("`pip download` did not download a file")
+            log.critical("`pip download` did not download a file")
             return 1
 
         # Rename archive to something universally recognisable
@@ -136,7 +145,7 @@ def main(args=None):
                         dep_link = file.readline().decode()
                         break
             else:
-                log.fatal("No dependency_links.txt found!")
+                log.critical("No dependency_links.txt found!")
                 return 1
 
         # Remove trailing version number in egg link
@@ -165,7 +174,7 @@ def main(args=None):
 if __name__ == "__main__":
     exit_code = main()
     if exit_code:
-        log.fatal("Install failed, exiting...")
+        log.critical("Install failed, exiting...")
         sys.exit(exit_code)
     else:
         sys.exit(0)
