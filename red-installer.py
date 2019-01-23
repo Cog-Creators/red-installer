@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import logging
 import pathlib
 import subprocess
 import sys
 import tarfile
 import tempfile
-from typing import List
 
 logging.basicConfig(
     style="{",
@@ -15,16 +15,69 @@ logging.basicConfig(
 )
 log = logging.getLogger("red-installer")
 
-IS_VENV: bool = hasattr(sys, "real_prefix") or (
+argparser = argparse.ArgumentParser(
+    prog="red-installer",
+    description="Simple installer for Red-DiscordBot",
+)
+argparser.add_argument(
+    "--url",
+    "-u",
+    metavar="URL",
+    help=(
+        "Install from a URL instead of from PyPI. Using this option will cause all "
+        "other options to be ignored."
+    )
+)
+argparser.add_argument(
+    "--install-version",
+    "-V",
+    metavar="VERSION",
+    help=(
+        "Install a particular version from PyPI."
+    )
+)
+argparser.add_argument(
+    "--extra",
+    "-e",
+    action="append",
+    metavar="EXTRA",
+    dest="extras",
+    help=(
+        "Include an extra to be installed with Red. Extras are the words in square "
+        "brackets when installing with pip. The voice extra is included by default. "
+        "To include multiple extras, use this option multiple times."
+    ),
+    default=["voice"],
+)
+argparser.add_argument(
+    "--dev",
+    "-d",
+    action="store_true",
+    help=(
+        "Install Red from the V3/develop branch on GitHub."
+    )
+)
+argparser.add_argument(
+    "--pre",
+    action="store_true",
+    help=(
+        "Prefer newer pre-releases over stable releases. This option is ignored when "
+        "used in conjunction with --install-version, --dev or --url."
+    )
+)
+
+IS_VENV = hasattr(sys, "real_prefix") or (
     hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
 )
-PIP_INSTALL_ARGS: List[str] = [sys.executable, "-m", "pip", "install", "--upgrade"]
+PIP_INSTALL_ARGS = [sys.executable, "-m", "pip", "install", "--upgrade"]
 if not IS_VENV:
     log.warning("Not in a virtual environment, will install to user site-packages")
     PIP_INSTALL_ARGS.append("--user")
 
 
-def main():
+def main(args=None):
+    options = argparser.parse_args(args)
+
     with tempfile.TemporaryDirectory() as tmpdir:
         # Download Red source distribution to a temporary directory
         args = [
@@ -38,8 +91,25 @@ def main():
             "Red-DiscordBot",
             "--dest",
             str(tmpdir),
-            "Red-DiscordBot",
         ]
+        if options.url is not None:
+            args.append(options.url)
+        else:
+            if options.pre:
+                args.append("--pre")
+            if options.install_version:
+                version_str = "==" + options.install_version
+            else:
+                version_str = ""
+            if options.dev:
+                package_str = (
+                    "https://github.com/Cog-Creators/Red-DiscordBot/tarball/V3/develop"
+                    "#egg=Red-DiscordBot"
+                )
+            else:
+                package_str = "Red-DiscordBot"
+            args.append(package_str + version_str)
+
         log.info("Downloading Red Archive with command: %s", " ".join(args))
         returncode = subprocess.call(args)
         if returncode:
@@ -47,7 +117,7 @@ def main():
 
         # The archive should be the only file in the temporary directory
         try:
-            archive_path: pathlib.Path = next(pathlib.Path(tmpdir).iterdir())
+            archive_path = next(pathlib.Path(tmpdir).iterdir())
         except StopIteration:
             log.fatal("`pip download` did not download a file")
             return 1
@@ -81,8 +151,13 @@ def main():
         if returncode:
             return returncode
 
+        if options.extras:
+            extras_str = "[" + ",".join(options.extras) + "]"
+        else:
+            extras_str = ""
+
         # Install Red itself and its PyPI-hosted dependencies
-        args = PIP_INSTALL_ARGS + [str(archive_path) + "[voice]"]
+        args = PIP_INSTALL_ARGS + [str(archive_path) + extras_str]
         log.info("Installing Red package with command: %s", " ".join(args))
         return subprocess.call(args)
 
